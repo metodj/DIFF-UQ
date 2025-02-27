@@ -1,0 +1,4 @@
+torch==2.2.0
+laplace-torch==0.2.2.2
+blobfile==2.0.2
+lmdb==1.6.2
