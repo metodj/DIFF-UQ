@@ -9,6 +9,7 @@ data:
     rescaled: true
     num_workers: 32
     num_classes: 1000
+    path: "/nvmestore/mjazbec/imagenet_data/data_train/data"
 
 model:
     model_type: "guided_diffusion"
