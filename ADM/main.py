@@ -6,11 +6,10 @@ import numpy as np
 import torch
 from torch.nn.utils import vector_to_parameters, parameters_to_vector
 
-from runners.diffusion import Diffusion, get_beta_schedule
 from models.diffusion import Model
 from models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
 from gen_unc_laplace import DiffusionLLDiagLaplace, preprocess_la_adm, LaplaceDataset
-from utils import inverse_data_transform, singlestep_ddim_sample, parse_args_and_config, seed_everything
+from utils import inverse_data_transform, singlestep_ddim_sample, parse_args_and_config, seed_everything, get_beta_schedule
 
 
 def main(args, config):
@@ -34,47 +33,46 @@ def main(args, config):
 
 
     ######  initialize diffusion and model(unet) ########## 
-    diffusion = Diffusion(args, config, rank=device)
-    if diffusion.config.model.model_type == "guided_diffusion":
+    if config.model.model_type == "guided_diffusion":
         model = GuidedDiffusion_Model(
-            image_size=diffusion.config.model.image_size,
-            in_channels=diffusion.config.model.in_channels,
-            model_channels=diffusion.config.model.model_channels,
-            out_channels=diffusion.config.model.out_channels,
-            num_res_blocks=diffusion.config.model.num_res_blocks,
-            attention_resolutions=diffusion.config.model.attention_resolutions,
-            dropout=diffusion.config.model.dropout,
-            channel_mult=diffusion.config.model.channel_mult,
-            conv_resample=diffusion.config.model.conv_resample,
-            dims=diffusion.config.model.dims,
-            num_classes=diffusion.config.model.num_classes,
-            use_checkpoint=diffusion.config.model.use_checkpoint,
-            use_fp16=diffusion.config.model.use_fp16,
-            num_heads=diffusion.config.model.num_heads,
-            num_head_channels=diffusion.config.model.num_head_channels,
-            num_heads_upsample=diffusion.config.model.num_heads_upsample,
-            use_scale_shift_norm=diffusion.config.model.use_scale_shift_norm,
-            resblock_updown=diffusion.config.model.resblock_updown,
-            use_new_attention_order=diffusion.config.model.use_new_attention_order,
+            image_size=config.model.image_size,
+            in_channels=config.model.in_channels,
+            model_channels=config.model.model_channels,
+            out_channels=config.model.out_channels,
+            num_res_blocks=config.model.num_res_blocks,
+            attention_resolutions=config.model.attention_resolutions,
+            dropout=config.model.dropout,
+            channel_mult=config.model.channel_mult,
+            conv_resample=config.model.conv_resample,
+            dims=config.model.dims,
+            num_classes=config.model.num_classes,
+            use_checkpoint=config.model.use_checkpoint,
+            use_fp16=config.model.use_fp16,
+            num_heads=config.model.num_heads,
+            num_head_channels=config.model.num_head_channels,
+            num_heads_upsample=config.model.num_heads_upsample,
+            use_scale_shift_norm=config.model.use_scale_shift_norm,
+            resblock_updown=config.model.resblock_updown,
+            use_new_attention_order=config.model.use_new_attention_order,
         )
     
     else:
-        model = Model(diffusion.config)
+        model = Model(config)
 
     model = model.to(device)
     map_location = {'cuda:%d' % 0: 'cuda:%d' % args.device}
 
 
-    if "ckpt_dir" in diffusion.config.model.__dict__.keys():
-        ckpt_dir = os.path.expanduser(diffusion.config.model.ckpt_dir)
+    if "ckpt_dir" in config.model.__dict__.keys():
+        ckpt_dir = os.path.expanduser(config.model.ckpt_dir)
         states = torch.load(
             ckpt_dir,
             map_location=map_location
         )
         # states = {f"module.{k}":v for k, v in states.items()}
-        if diffusion.config.model.model_type == 'improved_ddpm' or diffusion.config.model.model_type == 'guided_diffusion':
+        if config.model.model_type == 'improved_ddpm' or config.model.model_type == 'guided_diffusion':
             model.load_state_dict(states, strict=True)
-            if diffusion.config.model.use_fp16:
+            if config.model.use_fp16:
                 model.convert_to_fp16()
         else:
             modified_states = {}
@@ -83,24 +81,19 @@ def main(args, config):
                 modified_states[modified_key] = value
             model.load_state_dict(modified_states, strict=True)
 
-        if diffusion.config.model.ema: 
+        if config.model.ema: 
             raise NotImplementedError()
         else:
             ema_helper = None
 
-    # assert "IMAGENET" in diffusion.config.data.dataset
-    # train_dataset= imagenet_dataset(args = args, config = diffusion.config)
-
     image_path = '/nvmestore/mjazbec/imagenet_data/data_train/data'
-    la_dataset = LaplaceDataset(device, image_path, image_size=diffusion.config.model.image_size, train_la_data_size=args.train_la_data_size)
+    la_dataset = LaplaceDataset(device, image_path, image_size=config.model.image_size, train_la_data_size=args.train_la_data_size)
     la_dataloader= torch.utils.data.DataLoader(la_dataset, batch_size=args.train_la_batch_size, shuffle=True)
 
     # # print model layers
     # for name, param in model.named_parameters():
     #     print(f"{name}: {param.numel()}")
     
-    
-    # custom_model = CustomModel(model, train_dataloader, args, diffusion.config, optim_hp=False, full_la=False)
 
     betas = get_beta_schedule(
             beta_schedule=config.diffusion.beta_schedule,
@@ -109,6 +102,7 @@ def main(args, config):
             num_diffusion_timesteps=config.diffusion.num_diffusion_timesteps,
     )
     betas = torch.from_numpy(betas).float()
+    num_timesteps = betas.shape[0]
 
     _preprocess_la_adm = lambda x, y, device: preprocess_la_adm(x, y, betas, betas.shape[0], device)
     la = DiffusionLLDiagLaplace(model, f_preprocess_la_input=_preprocess_la_adm, last_layer_name="out.2",)
@@ -121,13 +115,13 @@ def main(args, config):
     print(last_layers.shape)
     print(type(la))
 
-    if diffusion.args.skip_type == "uniform":
-        skip = diffusion.num_timesteps // diffusion.args.timesteps
-        seq = range(0, diffusion.num_timesteps, skip)
-    elif diffusion.args.skip_type == "quad":
+    if args.skip_type == "uniform":
+        skip = num_timesteps // args.timesteps
+        seq = range(0, num_timesteps, skip)
+    elif args.skip_type == "quad":
         seq = (
             np.linspace(
-                0, np.sqrt(diffusion.num_timesteps * 0.8), diffusion.args.timesteps
+                0, np.sqrt(num_timesteps * 0.8), args.timesteps
             )
             ** 2
         )
@@ -136,7 +130,7 @@ def main(args, config):
         raise NotImplementedError 
 
     EXP_ROOT = "/nvmestore/mjazbec/diffusion/bayes_diff"
-    exp_dir = f'{EXP_ROOT}/exp_repo_clean/{diffusion.config.data.dataset}/ddim_fixed_class{args.fixed_class}_train%{args.train_la_data_size}_step{args.timesteps}_S{args.mc_size}_epi_unc_{args.seed}/'
+    exp_dir = f'{EXP_ROOT}/exp_repo_clean/{config.data.dataset}/ddim_fixed_class{args.fixed_class}_train%{args.train_la_data_size}_step{args.timesteps}_S{args.mc_size}_epi_unc_{args.seed}/'
     os.makedirs(exp_dir, exist_ok=True)
 
     all_sample_x = []
@@ -157,7 +151,7 @@ def main(args, config):
                 range(n_rounds), desc="Generating image samples for FID evaluation."
             ):
 
-                if diffusion.config.sampling.cond_class:
+                if config.sampling.cond_class:
                     classes = fixed_classes[:, loop].to(device)
                 else:
                     classes = None
@@ -172,7 +166,7 @@ def main(args, config):
                 eps_mu_t = model.forward_no_cfg(xT, (torch.ones(args.sample_batch_size) * seq[args.timesteps-1]).to(xT.device).to(torch.int64), **model_kwargs)
         
                 for timestep in range(args.timesteps-1, 0, -1):
-                    xt_next = singlestep_ddim_sample(diffusion, xt_next, seq, timestep, eps_mu_t)                
+                    xt_next = singlestep_ddim_sample(betas, xt_next, seq, timestep, eps_mu_t)                
                     eps_mu_t = model.forward_no_cfg(xt_next, (torch.ones(args.sample_batch_size) * seq[timestep-1]).to(xt_next.device).to(torch.int64), **model_kwargs)
     
                 x = inverse_data_transform(config, xt_next) 

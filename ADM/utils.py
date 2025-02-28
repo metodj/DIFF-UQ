@@ -35,13 +35,13 @@ def compute_alpha(beta, t):
     a = (1 - beta).cumprod(dim=0).index_select(0, t + 1).view(-1, 1, 1, 1)
     return a
 
-def singlestep_ddim_sample(diffusion, xt, seq, timestep, eps_t):
+def singlestep_ddim_sample(betas, xt, seq, timestep, eps_t):
     # at.sqrt() is the \alpha_t in our paper
     n = xt.size(0)
     t = (torch.ones(n)*seq[timestep]).to(xt.device)
     next_t = (torch.ones(n)*seq[(timestep-1)]).to(xt.device)
-    at = compute_alpha(diffusion.betas, t.long())
-    at_next = compute_alpha(diffusion.betas, next_t.long())
+    at = compute_alpha(betas, t.long())
+    at_next = compute_alpha(betas, next_t.long())
     x0_t = (xt - eps_t * (1 - at).sqrt()) / at.sqrt()
     c2 = (1 - at_next).sqrt()
     xt_next = at_next.sqrt() * x0_t + c2 * eps_t
