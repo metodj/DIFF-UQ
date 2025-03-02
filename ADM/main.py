@@ -1,6 +1,7 @@
 import os
 import tqdm
 from collections import Counter
+from PIL import Image
 
 import numpy as np
 import torch
@@ -8,7 +9,7 @@ from torch.nn.utils import vector_to_parameters, parameters_to_vector
 
 from models.diffusion import Model
 from models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
-from gen_unc_laplace import DiffusionLLDiagLaplace, preprocess_la_adm, LaplaceDataset
+from diffusion_laplace import DiffusionLLDiagLaplace, preprocess_la_adm, LaplaceDataset
 from utils import (
     inverse_data_transform,
     singlestep_ddim_sample,
@@ -84,7 +85,6 @@ def main(args, config):
     if "ckpt_dir" in config.model.__dict__.keys():
         ckpt_dir = os.path.expanduser(config.model.ckpt_dir)
         states = torch.load(ckpt_dir, map_location=map_location)
-        # states = {f"module.{k}":v for k, v in states.items()}
         if config.model.model_type == "improved_ddpm" or config.model.model_type == "guided_diffusion":
             model.load_state_dict(states, strict=True)
             if config.model.use_fp16:
@@ -147,7 +147,7 @@ def main(args, config):
     S, D = last_layers.shape
     for s in range(S):
 
-        os.makedirs(exp_dir + f"{s}/", exist_ok=True)
+        os.makedirs(exp_dir + f"{s}/imgs", exist_ok=True)
 
         with torch.no_grad():
 
@@ -186,7 +186,14 @@ def main(args, config):
 
                 x = inverse_data_transform(config, xt_next)
 
-                torch.save(x.cpu().numpy(), os.path.join(exp_dir + f"{s}/", f"{loop}.pt"))
+                # torch.save(x.cpu().numpy(), os.path.join(exp_dir + f"{s}/", f"{loop}.pt"))
+
+                x = x.cpu().numpy()
+                for i in range(loop * args.sample_batch_size, (loop + 1) * args.sample_batch_size):
+                    img = x[i].transpose(1, 2, 0)
+                    img = (img * 255).astype(np.uint8)
+                    img_pil = Image.fromarray(img)
+                    img_pil.save(os.path.join(exp_dir + f"{s}/imgs", f"{i:05d}.png"))
 
 
 if __name__ == "__main__":
