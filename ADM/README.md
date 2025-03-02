@@ -9,8 +9,9 @@ Code here is based on the following 2 repos:
 - Make sure to complete the **Setup** steps in `../eval/README.md` 
 
 ## Experiment
-1. Generate samples via `bash main.sh`
-2. Compute *generative uncertainty* via `python semantic_likelihood.py`
-3. Report metrics (FID, precision, recall) via `bash ../eval/eval.sh`
+1. Generate samples `bash main.sh`
+2. Compute *generative uncertainty* via `python semantic_likelihood.py --PATH`
+    - for `PATH` use `exp_dir` returned from Step 1
+2. Compute metrics (FID, precision, recall) via `bash ../eval/eval.sh` (make sure to update `PATH` in `../eval/eval.sh`)
 
 

@@ -1,9 +1,17 @@
 import os
 from PIL import Image
+import argparse
 
 import torch
 import numpy as np
 import clip
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Precision and Recall Calculation")
+    parser.add_argument("--path", type=str, required=True, help="Path to the samples")
+    parser.add_argument("--M", type=int, required=False, default=6, help="Number of models")
+    return parser.parse_args()
 
 
 def gaussian_entropy(mu_array: np.ndarray, sigma_squared: float) -> np.ndarray:
@@ -73,8 +81,5 @@ def compute_generative_uncertainty(path, M, eu_type="entropy"):
 
 
 if __name__ == "__main__":
-
-    PATH = "/nvmestore/mjazbec/diffusion/bayes_diff/exp_repo_clean/IMAGENET128/ddim_fixed_class10000_train%100_step50_S5_epi_unc_1234"
-    M = 6
-
-    compute_generative_uncertainty(PATH, M, eu_type="entropy")
+    args = parse_args()
+    compute_generative_uncertainty(args.path, args.M)

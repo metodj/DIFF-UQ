@@ -9,7 +9,7 @@ data:
     rescaled: true
     num_workers: 32
     num_classes: 1000
-    path: DATA_PATH
+    path: "/nvmestore/mjazbec/imagenet_data/data_train/data"
 
 model:
     model_type: "guided_diffusion"
@@ -35,7 +35,7 @@ model:
     use_new_attention_order: false
     var_type: fixedlarge
     ema: false
-    ckpt_dir: CKPT_DIR
+    ckpt_dir: "/ivi/zfs/s0/original_homes/mjazbec/epistem-diff/BayesDiff/ddpm_and_guided/models/128x128_diffusion.pt"
 
 classifier:
     ckpt_dir: "~/ddpm_ckpt/imagenet128/128x128_classifier.pt"

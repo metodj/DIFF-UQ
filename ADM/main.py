@@ -197,7 +197,10 @@ def main(args, config):
                     img_pil.save(os.path.join(exp_dir + f"{s}/imgs", f"{img_count:05d}.png"))
                     img_count += 1
 
+    return exp_dir
+
 
 if __name__ == "__main__":
     args, config = parse_args_and_config()
-    main(args, config)
+    exp_dir = main(args, config)
+    print(exp_dir, end="")

@@ -11,7 +11,7 @@ fixed_class="10000"
 seed="1234"
 exp_path="/nvmestore/mjazbec/diffusion/bayes_diff"
 
-echo "Running for seed $seed"
+echo "Generating samples"
 CUDA_VISIBLE_DEVICES=$DEVICES python main.py \
 --config $data".yml" --timesteps=$steps --skip_type=$DIS --train_la_batch_size $train_la_batch_size \
 --mc_size=$mc_size --sample_batch_size=$sample_batch_size --fixed_class=$fixed_class --train_la_data_size=$train_la_data_size \
