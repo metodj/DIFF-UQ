@@ -148,6 +148,7 @@ def main(args, config):
     for s in range(S):
 
         os.makedirs(exp_dir + f"{s}/imgs", exist_ok=True)
+        img_count = 0
 
         with torch.no_grad():
 
@@ -189,11 +190,12 @@ def main(args, config):
                 # torch.save(x.cpu().numpy(), os.path.join(exp_dir + f"{s}/", f"{loop}.pt"))
 
                 x = x.cpu().numpy()
-                for i in range(loop * args.sample_batch_size, (loop + 1) * args.sample_batch_size):
+                for i in range(x.shape[0]):
                     img = x[i].transpose(1, 2, 0)
                     img = (img * 255).astype(np.uint8)
                     img_pil = Image.fromarray(img)
-                    img_pil.save(os.path.join(exp_dir + f"{s}/imgs", f"{i:05d}.png"))
+                    img_pil.save(os.path.join(exp_dir + f"{s}/imgs", f"{img_count:05d}.png"))
+                    img_count += 1
 
 
 if __name__ == "__main__":
