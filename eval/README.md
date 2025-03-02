@@ -2,8 +2,7 @@
 Code here is based on [EDM](https://github.com/NVlabs/edm) repo. 
 
 ## Setup
-- Download the ADM model checkpoint using [this link](https://openaipublic.blob.core.windows.net/diffusion/jul-2021/128x128_diffusion.pt) and update `model.ckpt_dir` in `./configs/imagenet128_guided.yml`
-- Download the [ImageNet dataset](https://www.image-net.org/) to `DATA_PATH`
+- Download the [ImageNet dataset](https://www.image-net.org/) and save it to `DATA_PATH`
 - Compute reference statistics (FID) for ImageNet 128x128
 ```
 python dataset_tool.py --source=DATA_PATH --dest=./fid-refs/imagenet-256x256.zip --resolution=256x256 --transform=center-crop --max-images 50000
