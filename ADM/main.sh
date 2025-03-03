@@ -9,7 +9,7 @@ train_la_batch_size="32"
 DIS="uniform"
 fixed_class="10000"
 seed="1234"
-exp_path="/nvmestore/mjazbec/diffusion/bayes_diff"
+exp_path="./samples"
 
 echo "Generating samples"
 CUDA_VISIBLE_DEVICES=$DEVICES python main.py \

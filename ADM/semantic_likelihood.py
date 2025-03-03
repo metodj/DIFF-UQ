@@ -10,7 +10,7 @@ import clip
 def parse_args():
     parser = argparse.ArgumentParser(description="Precision and Recall Calculation")
     parser.add_argument("--path", type=str, required=True, help="Path to the samples")
-    parser.add_argument("--M", type=int, required=False, default=6, help="Number of models")
+    parser.add_argument("--M", type=int, required=False, default=5 + 1, help="Number of MC samples")
     return parser.parse_args()
 
 
@@ -64,8 +64,8 @@ def compute_generative_uncertainty(path, M, eu_type="entropy"):
 
     features = []
     for m in range(M):
-        path = f"{path}/{m}/clip_features.pt"
-        features.append(torch.load(path))
+        path_m = f"{path}/{m}/clip_features.pt"
+        features.append(torch.load(path_m))
 
     features = torch.stack(features, dim=0)
     features = np.transpose(features.cpu().numpy(), (1, 0, 2))
