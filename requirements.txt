@@ -1,0 +1,6 @@
+torch==2.2.0
+laplace-torch==0.2.2.2
+git+https://github.com/openai/CLIP.git
+blobfile==2.0.2
+lmdb==1.6.2
+click==8.1.7
