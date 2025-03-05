@@ -4,6 +4,8 @@ import PIL
 import torch
 import torchvision.transforms as transforms
 
+from laplace.baselaplace import DiagLaplace
+
 
 def list_image_files_and_class_recursively(image_path):
     paths = []
@@ -56,3 +58,47 @@ class LaplaceDataset(torch.utils.data.Dataset):
         x = self.transform(x)
 
         return x, label
+
+
+class DiffusionLLDiagLaplace(DiagLaplace):
+
+    def __init__(
+        self,
+        model,
+        f_preprocess_la_input,
+        last_layer_name,
+        backend,
+        likelihood="regression",
+        sigma_noise=1.0,
+        prior_precision=1.0,
+        prior_mean=0.0,
+        temperature=1.0,
+    ):
+        sum_param = 0
+        sum_param_grad = 0
+        sum_param_final_layer = 0
+        for name, param in model.named_parameters():
+            sum_param += param.numel()
+            if param.requires_grad:
+                sum_param_grad += param.numel()
+            if last_layer_name in name:
+                sum_param_final_layer += param.numel()
+            if not last_layer_name in name:
+                param.requires_grad = False
+        print(f"Total parameters: {sum_param}")
+        print(f"Total parameters with grad: {sum_param_grad}")
+        print(f"Total parameters in final layer: {sum_param_final_layer}")
+
+        super().__init__(model, likelihood, sigma_noise, prior_precision, prior_mean, temperature, backend=backend)
+
+        self.f_preprocess_la_input = f_preprocess_la_input
+
+    def fit(
+        self,
+    ):
+        raise NotImplementedError()
+
+    def _curv_closure(
+        self,
+    ):
+        raise NotImplementedError()

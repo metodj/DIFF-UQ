@@ -12,7 +12,7 @@ from torch.nn.utils import vector_to_parameters, parameters_to_vector
 
 from ADM.models.diffusion import Model
 from ADM.models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
-from ADM.diffusion_laplace import DiffusionLLDiagLaplace, preprocess_la_adm
+from ADM.laplace_adm import ADMLLDiagLaplace, preprocess_la_adm
 from ADM.utils_adm import (
     inverse_data_transform,
     singlestep_ddim_sample,
@@ -122,7 +122,7 @@ def main(args, config):
     #     print(f"{name}: {param.numel()}")
 
     _preprocess_la_adm = lambda x, y, device: preprocess_la_adm(x, y, betas, betas.shape[0], device)
-    la = DiffusionLLDiagLaplace(
+    la = ADMLLDiagLaplace(
         model,
         f_preprocess_la_input=_preprocess_la_adm,
         last_layer_name="out.2",
