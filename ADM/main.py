@@ -1,22 +1,26 @@
+import sys
 import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import tqdm
-from collections import Counter
 from PIL import Image
 
 import numpy as np
 import torch
 from torch.nn.utils import vector_to_parameters, parameters_to_vector
 
-from models.diffusion import Model
-from models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
-from diffusion_laplace import DiffusionLLDiagLaplace, preprocess_la_adm, LaplaceDataset
-from utils import (
+from ADM.models.diffusion import Model
+from ADM.models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
+from ADM.diffusion_laplace import DiffusionLLDiagLaplace, preprocess_la_adm
+from ADM.utils_adm import (
     inverse_data_transform,
     singlestep_ddim_sample,
     parse_args_and_config,
     seed_everything,
     get_beta_schedule,
 )
+from utils import LaplaceDataset
 
 
 def main(args, config):
