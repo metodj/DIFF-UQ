@@ -12,15 +12,16 @@ from torch.nn.utils import vector_to_parameters, parameters_to_vector
 
 from ADM.models.diffusion import Model
 from ADM.models.guided_diffusion.unet import UNetModel as GuidedDiffusion_Model
-from ADM.laplace_adm import preprocess_la_adm, postprocess_la_adm
-from ADM.utils_adm import (
+from ADM.utils import (
     inverse_data_transform,
     singlestep_ddim_sample,
     parse_args_and_config,
     seed_everything,
     get_beta_schedule,
+    preprocess_la_adm,
+    postprocess_la_adm,
 )
-from utils import LaplaceDataset, DiffusionLLDiagLaplace
+from diffusion_laplace import LaplaceDataset, DiffusionLLDiagLaplace
 
 
 def main(args, config):
