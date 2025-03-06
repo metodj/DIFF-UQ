@@ -51,7 +51,7 @@ def get_config():
 
     config.dataset = d(
         name="imagenet256_features",
-        path="/nvmestore/mjazbec/imagenet_data/data_train/data",
+        path="...",
         cfg=True,
         p_uncond=0.1,
         image_size=256,

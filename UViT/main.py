@@ -160,7 +160,7 @@ def main(args, config):
     for si in range(S):
 
         img_count = 0
-        os.makedirs(exp_dir + f"{si}/", exist_ok=True)
+        os.makedirs(exp_dir + f"{si}/imgs", exist_ok=True)
 
         # overwrite the parameters of the last layer with the sampled layer
         model_params = parameters_to_vector(nnet.parameters())

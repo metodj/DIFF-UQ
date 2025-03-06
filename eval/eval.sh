@@ -1,4 +1,4 @@
-EXP="/nvmestore/mjazbec/diffusion/bayes_diff/exp_repo_clean/IMAGENET128/ddim_fixed_class10000_train%100_step50_S5_epi_unc_1234"
+EXP="..."
 H=128
 # H=256
 
