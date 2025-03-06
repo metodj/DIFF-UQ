@@ -8,7 +8,7 @@ import clip
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Precision and Recall Calculation")
+    parser = argparse.ArgumentParser(description="Generative Uncertainty Calculation")
     parser.add_argument("--path", type=str, required=True, help="Path to the samples")
     parser.add_argument("--M", type=int, required=False, default=5 + 1, help="Number of MC samples")
     return parser.parse_args()

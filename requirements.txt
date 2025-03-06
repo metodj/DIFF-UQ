@@ -4,3 +4,4 @@ git+https://github.com/openai/CLIP.git
 blobfile==2.0.2
 lmdb==1.6.2
 click==8.1.7
+ml_collections==0.1.1
