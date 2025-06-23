@@ -1,5 +1,5 @@
 # Generative Uncertainty for Diffusion Models
-Code for paper [Generative Uncertainty in Diffusion Models](TODO:insert-arxiv-link).
+Code for paper [Generative Uncertainty in Diffusion Models](https://arxiv.org/abs/2502.20946).
 
 ## Main Dependencies
 * python = 3.9
